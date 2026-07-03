@@ -1,0 +1,42 @@
+/* app/globals.css */
+@import "tailwindcss";
+
+@theme {
+  --radius-none: 0;
+  --radius-sm: 0;
+  --radius: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-3xl: 0;
+  --radius-full: 0;
+}
+
+:root {
+  --bg-base: #1c1c1a;
+  --bg-raised: #232320;
+  --divider: #33332f;
+  --text-primary: #e8e4da;
+  --text-muted: #8a8a82;
+  --accent: #c2a878; /* straw gold: hover/active, straw tick, active label underline */
+  --highlight: #c97b54; /* warm copper: values, emphasis */
+  --status-live: #7a8b5c; /* lichen green */
+  --status-surveyed: #8a8a82; /* muted grey */
+
+  --font-display: var(--font-roboto-slab);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-mono), monospace;
+}
+
+h1,
+h2,
+h3,
+.wordmark {
+  font-family: var(--font-display), serif;
+}
