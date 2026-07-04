@@ -2,7 +2,6 @@
 import type { Metadata } from "next";
 import { Roboto_Slab, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/layout/Header";
 
 const robotoSlab = Roboto_Slab({
   variable: "--font-roboto-slab",
@@ -31,10 +30,7 @@ export default function RootLayout({
       lang="en"
       className={`${robotoSlab.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <Header />
-        {children}
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }
