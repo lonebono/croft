@@ -1,4 +1,5 @@
 import { DashboardGrid } from "@/components/layout/DashboardGrid";
+import Link from "next/link";
 
 export const HomePage = () => {
   return (
@@ -6,7 +7,13 @@ export const HomePage = () => {
       finance={<div className="text-[var(--text-muted)]">Finance</div>}
       calendar={<div className="text-[var(--text-muted)]">Calendar</div>}
       wardrobe={<div className="text-[var(--text-muted)]">Wardrobe</div>}
-      coffee={<div className="text-[var(--text-muted)]">Coffee</div>}
+      coffee={
+        <div className="text-[var(--text-muted)]">
+          <Link href="/coffee" className="text-[var(--accent)]">
+            Coffee
+          </Link>
+        </div>
+      }
     />
   );
 };
