@@ -3,7 +3,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Bean, BeanOriginType, RoastProfile } from "@/lib/parcels/coffee/types";
-import { getAllBeans } from "@/lib/parcels/coffee/queries";
 
 type BeanComboboxProps = {
   beans: Bean[];

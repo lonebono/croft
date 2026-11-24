@@ -12,7 +12,6 @@ import {
 import {
   CoffeeLogNotFoundError,
   CoffeeLogWriteError,
-  BeanNotFoundError,
   BeanWriteError,
 } from "./errors";
 
