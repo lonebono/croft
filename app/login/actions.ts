@@ -37,3 +37,22 @@ export const signInWithGitHub = async () => {
 
   redirect(data.url);
 };
+
+export type ResetRequestState = { sent: boolean; error: string | null };
+
+export const requestPasswordReset = async (
+  _prevState: ResetRequestState,
+  formData: FormData,
+): Promise<ResetRequestState> => {
+  const email = formData.get("email") as string;
+  const origin = (await headers()).get("origin");
+
+  const supabase = await createClient();
+  // Supabase returns success for unknown emails too, so this can't be used to probe accounts
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/reset`,
+  });
+
+  if (error) return { sent: false, error: error.message };
+  return { sent: true, error: null };
+};

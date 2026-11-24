@@ -37,8 +37,12 @@ export const proxy = async (request: NextRequest) => {
 
   const { pathname } = request.nextUrl;
   const isLoginRoute = pathname.startsWith("/login");
-  // OAuth returns here before a session exists; exact match so nothing else under /auth goes public
-  const isPublicRoute = isLoginRoute || pathname === "/auth/callback";
+  // OAuth and password-reset links land here before a session exists;
+  // exact match so nothing else under /auth goes public
+  const isPublicRoute =
+    isLoginRoute ||
+    pathname === "/auth/callback" ||
+    pathname === "/auth/reset";
 
   if (!user && !isPublicRoute) {
     const redirectUrl = request.nextUrl.clone();
