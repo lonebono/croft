@@ -61,12 +61,16 @@ h3,
   input:-webkit-autofill:focus {
     -webkit-text-fill-color: var(--text-primary);
     caret-color: var(--text-primary);
-    transition: background-color 600000s 0s, color 600000s 0s;
+    transition:
+      background-color 600000s 0s,
+      color 600000s 0s;
   }
 
   input:autofill {
     -webkit-text-fill-color: var(--text-primary);
     caret-color: var(--text-primary);
-    transition: background-color 600000s 0s, color 600000s 0s;
+    transition:
+      background-color 600000s 0s,
+      color 600000s 0s;
   }
 }
