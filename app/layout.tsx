@@ -1,18 +1,21 @@
 // app/layout.tsx
 import type { Metadata } from "next";
-import { Roboto_Slab, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const robotoSlab = Roboto_Slab({
+// Self-hosted variable fonts (latin subset). Not next/font/google: its
+// Turbopack loader fails on this machine, and local files keep builds offline.
+const robotoSlab = localFont({
+  src: "./fonts/RobotoSlab-latin.woff2",
   variable: "--font-roboto-slab",
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: "400 700",
+  adjustFontFallback: "Times New Roman",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const jetbrainsMono = localFont({
+  src: "./fonts/JetBrainsMono-latin.woff2",
   variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: "400 500",
 });
 
 export const metadata: Metadata = {
