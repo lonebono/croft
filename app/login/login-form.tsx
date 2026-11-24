@@ -2,11 +2,15 @@
 "use client";
 
 import { useActionState } from "react";
-import { signIn, type LoginState } from "./actions";
+import { signIn, signInWithGitHub, type LoginState } from "./actions";
 
 const initialState: LoginState = { error: null };
 
-export const LoginForm = () => {
+type LoginFormProps = {
+  githubFailed: boolean;
+};
+
+export const LoginForm = ({ githubFailed }: LoginFormProps) => {
   const [state, formAction, isPending] = useActionState(signIn, initialState);
 
   return (
@@ -51,6 +55,23 @@ export const LoginForm = () => {
           >
             sign in →
           </button>
+        </form>
+
+        <form action={signInWithGitHub} className="mt-2">
+          <button
+            type="submit"
+            className="font-mono text-xs text-[var(--accent)] hover:opacity-70"
+          >
+            sign in with github →
+          </button>
+          {githubFailed && (
+            <p
+              role="alert"
+              className="mt-2 font-mono text-[10px] text-[var(--highlight)]"
+            >
+              github sign-in failed
+            </p>
+          )}
         </form>
       </div>
     </div>

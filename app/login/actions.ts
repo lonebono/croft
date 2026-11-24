@@ -1,6 +1,7 @@
-// app/login/actions.tsx
+// app/login/actions.ts
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -19,4 +20,20 @@ export const signIn = async (
   if (error) return { error: error.message };
 
   redirect("/");
+};
+
+export const signInWithGitHub = async () => {
+  // Server Actions reject requests whose Origin doesn't match Host,
+  // so this is trustworthy and works on localhost, previews and prod alike.
+  const origin = (await headers()).get("origin");
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "github",
+    options: { redirectTo: `${origin}/auth/callback` },
+  });
+
+  if (error || !data.url) redirect("/login?error=github");
+
+  redirect(data.url);
 };

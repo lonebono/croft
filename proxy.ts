@@ -35,9 +35,12 @@ export const proxy = async (request: NextRequest) => {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isLoginRoute = request.nextUrl.pathname.startsWith("/login");
+  const { pathname } = request.nextUrl;
+  const isLoginRoute = pathname.startsWith("/login");
+  // OAuth returns here before a session exists; exact match so nothing else under /auth goes public
+  const isPublicRoute = isLoginRoute || pathname === "/auth/callback";
 
-  if (!user && !isLoginRoute) {
+  if (!user && !isPublicRoute) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     return NextResponse.redirect(redirectUrl);
