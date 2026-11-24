@@ -1,12 +1,9 @@
-export type RoastProfile = "light" | "medium" | "medium-dark" | "dark";
-export type BeanOriginType = "single-origin" | "blend";
-export type BrewMethod =
-  | "espresso"
-  | "pourover"
-  | "aeropress"
-  | "french-press"
-  | "cold-brew"
-  | "moka-pot";
+import type { Enums } from "@/lib/supabase/database.types";
+
+// Enums come from the DB so a new brew method or roast only needs a migration
+export type RoastProfile = Enums<"roast_profile">;
+export type BeanOriginType = Enums<"bean_origin_type">;
+export type BrewMethod = Enums<"brew_method">;
 
 export type Bean = {
   id: string;

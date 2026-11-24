@@ -1,6 +1,7 @@
 // lib/supabase/client.ts
 import { createBrowserClient } from "@supabase/ssr";
 import { AppError } from "@/lib/errors";
+import type { Database } from "./database.types";
 
 export const createClient = () => {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -13,5 +14,5 @@ export const createClient = () => {
     );
   }
 
-  return createBrowserClient(url, publishableKey);
+  return createBrowserClient<Database>(url, publishableKey);
 };

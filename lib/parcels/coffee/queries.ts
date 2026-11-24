@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import type { Tables } from "@/lib/supabase/database.types";
 const supabase = createClient();
 import {
   Bean,
@@ -71,19 +72,7 @@ export const getBeanAggregate = async (
     .maybeSingle();
 
   if (error) throw new BeanWriteError(error.message);
-  if (!data) return null;
-
-  return {
-    beanId: data.bean_id,
-    brewCount: data.brew_count,
-    overall: Number(data.overall),
-    acidity: Number(data.acidity),
-    sweetness: Number(data.sweetness),
-    body: Number(data.body),
-    aroma: Number(data.aroma),
-    fragrance: Number(data.fragrance),
-    aftertaste: Number(data.aftertaste),
-  };
+  return data ? mapAggregateRow(data) : null;
 };
 
 // ---------- tags ----------
@@ -207,32 +196,50 @@ export const createCoffeeLog = async (
 
 // ---------- row mappers ----------
 
-const mapBeanRow = (row: Record<string, unknown>): Bean => ({
-  id: row.id as string,
-  name: row.name as string,
-  roaster: row.roaster as string,
-  originType: row.origin_type as Bean["originType"],
-  roastProfile: row.roast_profile as Bean["roastProfile"],
-  createdAt: row.created_at as string,
+const mapBeanRow = (row: Tables<"beans">): Bean => ({
+  id: row.id,
+  name: row.name,
+  roaster: row.roaster,
+  originType: row.origin_type,
+  roastProfile: row.roast_profile,
+  createdAt: row.created_at,
 });
 
-const mapLogRow = (row: Record<string, unknown>): CoffeeLog => ({
-  id: row.id as string,
-  beanId: row.bean_id as string,
-  brewedAt: row.brewed_at as string,
-  brewMethod: row.brew_method as CoffeeLog["brewMethod"],
-  brewTimeSeconds: row.brew_time_seconds as number | null,
-  doseG: Number(row.dose_g),
-  outputG: Number(row.output_g),
-  ratio: Number(row.ratio),
-  overall: row.overall as number,
-  acidity: row.acidity as number,
-  sweetness: row.sweetness as number,
-  body: row.body as number,
-  aroma: row.aroma as number,
-  fragrance: row.fragrance as number,
-  aftertaste: row.aftertaste as number,
-  tagIds: ((row.coffee_log_tags as { tag_id: string }[]) ?? []).map(
-    (t) => t.tag_id,
-  ),
+// coffee_log_tags is present only when the query embeds it
+type LogRow = Tables<"coffee_logs"> & {
+  coffee_log_tags?: Pick<Tables<"coffee_log_tags">, "tag_id">[];
+};
+
+const mapLogRow = (row: LogRow): CoffeeLog => ({
+  id: row.id,
+  beanId: row.bean_id,
+  brewedAt: row.brewed_at,
+  brewMethod: row.brew_method,
+  brewTimeSeconds: row.brew_time_seconds,
+  doseG: row.dose_g,
+  outputG: row.output_g,
+  // generated column: always set by Postgres, but typed nullable
+  ratio: row.ratio ?? row.output_g / row.dose_g,
+  overall: row.overall,
+  acidity: row.acidity,
+  sweetness: row.sweetness,
+  body: row.body,
+  aroma: row.aroma,
+  fragrance: row.fragrance,
+  aftertaste: row.aftertaste,
+  tagIds: (row.coffee_log_tags ?? []).map((t) => t.tag_id),
+});
+
+// View columns are all typed nullable; a row only exists for a bean with brews,
+// so the fallbacks never fire in practice
+const mapAggregateRow = (row: Tables<"bean_aggregates">): BeanAggregate => ({
+  beanId: row.bean_id ?? "",
+  brewCount: row.brew_count ?? 0,
+  overall: row.overall ?? 0,
+  acidity: row.acidity ?? 0,
+  sweetness: row.sweetness ?? 0,
+  body: row.body ?? 0,
+  aroma: row.aroma ?? 0,
+  fragrance: row.fragrance ?? 0,
+  aftertaste: row.aftertaste ?? 0,
 });
