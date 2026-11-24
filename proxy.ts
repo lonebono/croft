@@ -1,13 +1,20 @@
 // proxy.ts
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { AppError } from "@/lib/errors";
 
 export const proxy = async (request: NextRequest) => {
   let response = NextResponse.next({ request });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !publishableKey) return response;
+  // Fail closed: missing config must never mean "skip the auth gate"
+  if (!url || !publishableKey) {
+    throw new AppError(
+      "Missing Supabase env vars (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)",
+      "MISSING_ENV",
+    );
+  }
 
   const supabase = createServerClient(url, publishableKey, {
     cookies: {
