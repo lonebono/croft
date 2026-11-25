@@ -1,0 +1,16 @@
+# Prettier also reads .gitignore (node_modules, .next, .env*, .claude/ ...)
+
+# generated: keep byte-identical to `supabase gen types` output so regen diffs stay clean
+lib/supabase/database.types.ts
+package-lock.json
+
+# supabase cli link state
+supabase/.temp
+
+# local-only docs (excluded via .git/info/exclude, which Prettier doesn't read)
+CLAUDE.md
+SPEC.md
+STATUS.md
+
+# managed by `next dev` (agentRules); formatting it would fight Next rewriting the block
+AGENTS.md
