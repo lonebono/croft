@@ -1,0 +1,72 @@
+name: Backup
+
+# Daily encrypted pg_dump of the Supabase database, kept 30 days as an artifact.
+# The repo is public, so anyone signed in to GitHub can download the artifact:
+# only the age ciphertext ever leaves the runner, and only the owner holds the
+# private key. Restore: download, `age -d -i <key> -o croft.dump croft-*.dump.age`,
+# then `pg_restore --list croft.dump`.
+
+on:
+  schedule:
+    - cron: "0 18 * * *" # 02:00 Manila
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      # Connection details are not secret; the password is.
+      PGHOST: aws-0-ap-northeast-1.pooler.supabase.com
+      PGPORT: "5432"
+      PGUSER: postgres.gfkhhkukwyioeungiulr
+      PGDATABASE: postgres
+      PGSSLMODE: require
+      PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      # Public half of the owner's age key pair
+      AGE_RECIPIENT: age19zmlhxa36djmfhs2qdqj3rn8rxuavwyueuas89w8e88q6ytec3gq04ql6l
+    steps:
+      - name: Install PostgreSQL 17 client and age
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17 age
+
+      - name: Dump, verify, encrypt
+        run: |
+          set -euo pipefail
+          umask 077
+          bin=/usr/lib/postgresql/17/bin
+          file="croft-$(date -u +%Y%m%d-%H%M).dump"
+
+          "$bin/pg_dump" -Fc --no-owner -f "$RUNNER_TEMP/$file"
+
+          # Fail loudly on an unreadable or empty dump instead of uploading it
+          "$bin/pg_restore" --list "$RUNNER_TEMP/$file" > "$RUNNER_TEMP/toc.txt"
+          grep -q "TABLE DATA public coffee_logs" "$RUNNER_TEMP/toc.txt"
+          echo "dump: $(stat -c %s "$RUNNER_TEMP/$file") bytes, $(wc -l < "$RUNNER_TEMP/toc.txt") TOC entries"
+
+          age -r "$AGE_RECIPIENT" -o "$RUNNER_TEMP/$file.age" "$RUNNER_TEMP/$file"
+          rm -f "$RUNNER_TEMP/$file" "$RUNNER_TEMP/toc.txt"
+
+          echo "BACKUP_FILE=$file.age" >> "$GITHUB_ENV"
+
+      - name: Upload encrypted backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BACKUP_FILE }}
+          path: ${{ runner.temp }}/${{ env.BACKUP_FILE }}
+          retention-days: 30
+          compression-level: 0
+          if-no-files-found: error
